@@ -1,0 +1,6 @@
+[project]
+name = "football-data-pipeline-framework"
+version = "0.1.0"
+
+[tool.setuptools]
+package-dir = {"" = "."}
