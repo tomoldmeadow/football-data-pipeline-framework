@@ -7,6 +7,10 @@ from src.config.settings import (
     MATCHES_URL_TEMPLATE
 )
 
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 BRONZE_PATH = Path("data/bronze")
 
 
@@ -28,17 +32,17 @@ def save_json(data, filepath: Path):
 
 
 def extract_competitions():
-    print("Downloading competitions data...")
+    logger.info("Downloading competitions data...")
 
     data = download_json(COMPETITIONS_URL)
 
     save_json(data, BRONZE_PATH / "competitions.json")
 
-    print("Competitions data saved.")
+    logger.info("Competitions data saved.")
 
 
 def extract_matches(competition_id: int, season_id: int):
-    print(f"Downloading matches for comp {competition_id}, season {season_id}")
+    logger.info(f"Downloading matches for comp {competition_id}, season {season_id}")
 
     url = MATCHES_URL_TEMPLATE.format(
         competition_id=competition_id,
@@ -51,4 +55,4 @@ def extract_matches(competition_id: int, season_id: int):
 
     save_json(data, BRONZE_PATH / filename)
 
-    print("Matches data saved.")
+    logger.info("Matches data saved.")
