@@ -14,6 +14,7 @@ from src.loading.duckdb_loader import (
     save_dataframe
 )
 
+from src.validation.matches_validator import validate_matches
 from src.utils.logger import get_logger
 
 logger = get_logger("pipeline")
@@ -46,6 +47,17 @@ if __name__ == "__main__":
            matches_data = json.load(f)
 
     matches_df = transform_matches(matches_data)
+
+    # Validate the matches dataframe
+    errors = validate_matches(matches_df)
+
+    if errors:
+        logger.error("Validation failed:")
+        for e in errors:
+            logger.error(e)
+        raise Exception("Pipeline failed validation")
+    else:
+        logger.info("Validation passed")
 
     save_dataframe(matches_df, "matches")
     
