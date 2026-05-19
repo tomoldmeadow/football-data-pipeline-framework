@@ -14,16 +14,25 @@ from src.loading.duckdb_loader import (
     save_dataframe
 )
 
+from src.utils.logger import get_logger
+
+logger = get_logger("pipeline")
+
 
 if __name__ == "__main__":
+
+    logger.info("Pipeline started")
+
     ensure_directories()
 
+    logger.info("Extracting competitions...")
     extract_competitions()
 
     # Example:
     # Competition 43 = FIFA World Cup
     # Season 3 = 2018
 
+    logger.info("Extracting matches...")
     extract_matches(
         competition_id=43,
         season_id=3
@@ -40,4 +49,5 @@ if __name__ == "__main__":
 
     save_dataframe(matches_df, "matches")
     
-    print("matches dataframe loaded into duckdb")
+    logger.info("Pipeline finished successfully")
+    logger.info("matches dataframe loaded into duckdb")
