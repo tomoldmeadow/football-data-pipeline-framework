@@ -3,7 +3,8 @@ import json
 from src.extraction.statsbomb_extractor import (
     ensure_directories,
     extract_competitions,
-    extract_matches
+    extract_matches,
+    extract_events
 )
 
 from src.transformation.matches_transformer import (
@@ -45,6 +46,9 @@ if __name__ == "__main__":
               ) as f:
            
            matches_data = json.load(f)
+
+    logger.info("Extracting events...")
+    extract_events(match_id=7585)
 
     matches_df = transform_matches(matches_data)
 

@@ -4,7 +4,8 @@ import json
 
 from src.config.settings import (
     COMPETITIONS_URL,
-    MATCHES_URL_TEMPLATE
+    MATCHES_URL_TEMPLATE,
+    EVENTS_URL_TEMPLATE
 )
 
 from src.utils.logger import get_logger
@@ -56,3 +57,23 @@ def extract_matches(competition_id: int, season_id: int):
     save_json(data, BRONZE_PATH / filename)
 
     logger.info("Matches data saved.")
+
+
+def extract_events(match_id: int):
+
+    logger.info(f"Downloading events for match {match_id}")
+
+    url = EVENTS_URL_TEMPLATE.format(
+        match_id=match_id
+    )
+
+    data = download_json(url)
+
+    filename = f"events_{match_id}.json"
+
+    save_json(
+        data,
+        BRONZE_PATH / filename
+    )
+
+    logger.info(f"Events saved for match {match_id}")
