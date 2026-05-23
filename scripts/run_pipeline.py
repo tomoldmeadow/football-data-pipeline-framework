@@ -11,11 +11,17 @@ from src.transformation.matches_transformer import (
     transform_matches
 )
 
+from src.transformation.events_transformer import (
+    transform_events
+)
+
 from src.loading.duckdb_loader import (
     save_dataframe
 )
 
 from src.validation.matches_validator import validate_matches
+from src.validation.events_validator import validate_events
+
 from src.utils.logger import get_logger
 
 logger = get_logger("pipeline")
@@ -46,6 +52,26 @@ if __name__ == "__main__":
               ) as f:
            
            matches_data = json.load(f)
+
+    with open(
+        "data/bronze/events_7585.json",
+        "r",
+        encoding="utf-8"
+    ) as f:
+
+        events_data = json.load(f)
+
+    events_df = transform_events(events_data)
+
+    event_errors = validate_events(events_df)
+
+    if event_errors:
+        logger.error(event_errors)
+        raise Exception("Event validation failed")
+
+    save_dataframe(events_df, "events")
+
+    logger.info("Events loaded successfully")
 
     logger.info("Extracting events...")
     extract_events(match_id=7585)
