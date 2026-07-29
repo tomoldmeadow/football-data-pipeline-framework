@@ -1,5 +1,11 @@
 import json
 
+from src.config.settings import (
+    DEFAULT_COMPETITION_ID,
+    DEFAULT_SEASON_ID,
+    MAX_MATCHES
+)
+
 from src.extraction.statsbomb_extractor import (
     ensure_directories,
     extract_competitions,
@@ -45,13 +51,13 @@ def run_pipeline():
     logger.info("Extracting matches")
 
     extract_matches(
-        competition_id=43,
-        season_id=3
+        competition_id=DEFAULT_COMPETITION_ID,
+        season_id=DEFAULT_SEASON_ID
     )
 
 
     with open(
-        "data/bronze/matches_43_3.json",
+        f"data/bronze/matches_{DEFAULT_COMPETITION_ID}_{DEFAULT_SEASON_ID}.json",
         encoding="utf-8"
     ) as f:
 
@@ -64,6 +70,10 @@ def run_pipeline():
         match["match_id"]
         for match in matches_data
     ]
+
+    # Place max on number of matches to download during development
+    if MAX_MATCHES is not None:
+        match_ids = match_ids[:MAX_MATCHES]
 
 
     for match_id in match_ids:

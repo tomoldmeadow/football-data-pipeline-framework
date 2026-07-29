@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def transform_events(events_data):
+def transform_events(events_data, match_id):
 
     rows = []
 
@@ -9,7 +9,7 @@ def transform_events(events_data):
 
         rows.append({
             "event_id": event.get("id"),
-            "match_id": event.get("match_id"),
+            "match_id": match_id,
             "minute": event.get("minute"),
             "second": event.get("second"),
 
