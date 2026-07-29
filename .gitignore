@@ -223,6 +223,9 @@ __marimo__/
 *.db
 *.duckdb
 
+# Local Testing files
+db_testing.py
+
 # Data layers (optional but recommended)
 data/bronze/
 data/silver/
