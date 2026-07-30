@@ -1,10 +1,9 @@
 import duckdb
-
-DB_PATH = "football.db"
+from src.config.paths import DATABASE_PATH
 
 
 def get_connection():
-    return duckdb.connect(DB_PATH)
+    return duckdb.connect(str(DATABASE_PATH))
 
 
 def save_dataframe(df, table_name: str):

@@ -9,14 +9,13 @@ from src.config.settings import (
 )
 
 from src.utils.logger import get_logger
+from src.config.paths import BRONZE_DIR
 
 logger = get_logger(__name__)
 
-BRONZE_PATH = Path("data/bronze")
-
 
 def ensure_directories():
-    BRONZE_PATH.mkdir(parents=True, exist_ok=True)
+    BRONZE_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def download_json(url: str):
@@ -37,7 +36,7 @@ def extract_competitions():
 
     data = download_json(COMPETITIONS_URL)
 
-    save_json(data, BRONZE_PATH / "competitions.json")
+    save_json(data, BRONZE_DIR / "competitions.json")
 
     logger.info("Competitions data saved.")
 
@@ -54,7 +53,7 @@ def extract_matches(competition_id: int, season_id: int):
 
     filename = f"matches_{competition_id}_{season_id}.json"
 
-    save_json(data, BRONZE_PATH / filename)
+    save_json(data, BRONZE_DIR / filename)
 
     logger.info("Matches data saved.")
 
@@ -73,7 +72,7 @@ def extract_events(match_id: int):
 
     save_json(
         data,
-        BRONZE_PATH / filename
+        BRONZE_DIR / filename
     )
 
     logger.info(f"Events saved for match {match_id}")

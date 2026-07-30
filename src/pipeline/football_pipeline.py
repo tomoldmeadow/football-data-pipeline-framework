@@ -28,6 +28,8 @@ from src.loading.duckdb_loader import save_dataframe
 
 from src.utils.logger import get_logger
 
+from src.config.paths import BRONZE_DIR
+
 
 logger = get_logger("football_pipeline")
 
@@ -57,7 +59,7 @@ def run_pipeline():
 
 
     with open(
-        f"data/bronze/matches_{DEFAULT_COMPETITION_ID}_{DEFAULT_SEASON_ID}.json",
+        BRONZE_DIR / f"matches_{DEFAULT_COMPETITION_ID}_{DEFAULT_SEASON_ID}.json",
         encoding="utf-8"
     ) as f:
 
@@ -97,7 +99,7 @@ def run_pipeline():
     for match_id in match_ids:
 
         with open(
-            f"data/bronze/events_{match_id}.json",
+            BRONZE_DIR / f"events_{match_id}.json",
             encoding="utf-8"
         ) as f:
 
