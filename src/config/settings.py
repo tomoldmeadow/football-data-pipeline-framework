@@ -29,6 +29,9 @@ MAX_MATCHES = 5
 # Skip downloading files that already exist.
 SKIP_EXISTING_FILES = True
 
+# Force refresh of all files
+FORCE_REFRESH = False
+
 # ======================================================
 # Validation
 # ======================================================
