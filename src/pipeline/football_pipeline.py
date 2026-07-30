@@ -1,4 +1,5 @@
 import json
+import pandas as pd
 
 from src.config.settings import (
     DEFAULT_COMPETITION_ID,
