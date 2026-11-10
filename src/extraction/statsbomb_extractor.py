@@ -29,7 +29,7 @@ def skip_file(filename: str, output_file: Path):
 
 
 def download_json(url: str):
-    response = requests.get(url)
+    response = requests.get(url, timeout=30)
 
     response.raise_for_status()
 
