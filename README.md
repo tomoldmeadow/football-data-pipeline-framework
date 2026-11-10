@@ -18,17 +18,42 @@ StatsBomb Open Data
         |
    Validation        src/validation     -> errors / warnings
         |
-    Loading          src/loading        -> DuckDB (football.db)
+ Loading (Silver)    src/loading        -> DuckDB schema `silver`
+        |
+  Gold (SQL)         src/gold/sql       -> DuckDB schema `gold`
 ```
 
 `src/pipeline/football_pipeline.py` orchestrates the stages and
 `scripts/run_pipeline.py` is the entry point.
 
-### Tables
+### Silver tables (`silver.*`)
 
-- `matches`: one row per match (teams, date, score).
-- `events`: one row per event with the common StatsBomb fields (period,
-  timestamp, possession, team, player, position, event type, location).
+| Table | Contents |
+|---|---|
+| `matches` | One row per match (teams, date, score) |
+| `events` | One row per event with the common StatsBomb fields |
+| `pass_events`, `shot_events`, `carry_events`, `dribble_events`, `duel_events`, `foul_events` | Type-specific attributes, keyed on `event_id` |
+| `lineups` | Squad players per match (including unused substitutes) |
+| `lineup_positions` | Time spells per player and position, the source of minutes played |
+
+### Gold tables (`gold.*`)
+
+Built by the numbered SQL files in `src/gold/sql`, which are rebuilt from
+Silver on every run.
+
+| Table | Grain |
+|---|---|
+| `dim_players`, `dim_teams` | One row per player / team |
+| `player_match_stats` | Player per match: minutes, goals, assists, shots, xG, passing, progressive passes, tackles, interceptions |
+| `player_tournament_stats` | Player across all loaded matches |
+| `team_match_stats` | Team per match: goals, shots, xG, pass accuracy, pass share, possessions, pressures |
+| `possessions` | One row per possession sequence |
+| `match_summary` | One row per match, both teams side by side |
+
+Metric definitions are documented at the top of each SQL file. Notable
+choices: minutes come from lineup positions, not event counts. Penalty
+shootout kicks (period 5) are excluded from goals, shots and xG. Possession
+is approximated by share of passes.
 
 ## Setup
 
@@ -75,7 +100,7 @@ CI runs both on every pull request.
 
 ## Roadmap
 
-1. Silver/Gold layers: typed event tables, lineups, player/team/possession analytics.
-2. FastAPI service and Streamlit dashboard.
-3. Football news ingestion.
-4. RAG over news plus SQL over DuckDB, then an agent layer.
+1. FastAPI service and Streamlit dashboard over the Gold tables.
+2. Football news ingestion.
+3. RAG over news plus SQL over DuckDB, then an agent layer.
+4. Further Silver detail tables (goalkeeper events and others).

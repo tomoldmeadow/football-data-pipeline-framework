@@ -3,7 +3,10 @@ import re
 import duckdb
 from src.config.paths import DATABASE_PATH
 
-TABLE_NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+# A plain identifier, optionally schema-qualified (e.g. "silver.events")
+TABLE_NAME_PATTERN = re.compile(
+    r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$"
+)
 
 
 def get_connection():
@@ -20,8 +23,10 @@ def save_dataframe(df, table_name: str):
 
     Args:
         df: The pandas DataFrame to persist.
-        table_name: Name of the destination table. Must be a plain SQL
-            identifier (letters, digits, underscores).
+        table_name: Name of the destination table, optionally prefixed
+            with a schema ("silver.events"). The schema is created if it
+            does not exist. Must be plain SQL identifiers (letters,
+            digits, underscores).
 
     Raises:
         ValueError: If table_name is not a valid identifier.
@@ -33,6 +38,10 @@ def save_dataframe(df, table_name: str):
     conn = get_connection()
 
     try:
+        if "." in table_name:
+            schema = table_name.split(".")[0]
+            conn.execute(f"CREATE SCHEMA IF NOT EXISTS {schema}")
+
         conn.register("dataframe_to_load", df)
 
         conn.execute(f"""

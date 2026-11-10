@@ -6,6 +6,7 @@ from src.config.settings import (
     COMPETITIONS_URL,
     MATCHES_URL_TEMPLATE,
     EVENTS_URL_TEMPLATE,
+    LINEUPS_URL_TEMPLATE,
     SKIP_EXISTING_FILES,
     FORCE_REFRESH
 )
@@ -100,3 +101,24 @@ def extract_events(match_id: int):
     )
 
     logger.info(f"Events saved for match {match_id}")
+
+
+def extract_lineups(match_id: int):
+
+    logger.info(f"Downloading lineups for match {match_id}")
+
+    url = LINEUPS_URL_TEMPLATE.format(
+        match_id=match_id
+    )
+
+    filename = f"lineups_{match_id}.json"
+    output_file = BRONZE_DIR / filename
+
+    if skip_file(filename, output_file):
+        return
+
+    data = download_json(url)
+
+    save_json(data, output_file)
+
+    logger.info(f"Lineups saved for match {match_id}")
