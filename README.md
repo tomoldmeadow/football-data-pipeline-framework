@@ -81,6 +81,42 @@ Configuration lives in `src/config/settings.py` (competition, season,
 - Tables are fully refreshed on each load, so re-running never duplicates rows.
 - Set `MAX_MATCHES = None` to ingest every match in the competition.
 
+## API
+
+A read-only FastAPI service exposes the Gold tables. After running the
+pipeline:
+
+```bash
+uvicorn src.api.main:app
+```
+
+Interactive docs are at http://127.0.0.1:8000/docs. Set `FOOTBALL_DB_PATH`
+to point at a different database file.
+
+| Endpoint | Description |
+|---|---|
+| `GET /health` | Status and match count |
+| `GET /matches` | Match summaries (`team`, `limit`, `offset`) |
+| `GET /matches/{match_id}` | One match with both teams' statistics |
+| `GET /matches/{match_id}/events` | Events (`event_type`, `team_id`, `player_id`, `period`, paging) |
+| `GET /players` | Tournament stats (`q`, `team`, `min_minutes`, `sort_by`, `order`, paging) |
+| `GET /players/{player_id}` | Player profile and totals |
+| `GET /players/{player_id}/statistics` | Per-match statistics |
+| `GET /players/compare?ids=1&ids=2` | Side-by-side totals with per-90 rates (2 to 5 players) |
+| `GET /teams` | All teams |
+| `GET /teams/{team_id}/statistics` | Totals and match-by-match results with opponent figures |
+
+## Dashboard
+
+A Streamlit dashboard (matches, player leaderboard, player comparison and
+team statistics) reads from the API. Start the API, then:
+
+```bash
+streamlit run src/dashboard/app.py
+```
+
+Set `FOOTBALL_API_URL` if the API is not on `http://127.0.0.1:8000`.
+
 ## Validation
 
 Events validation returns `(errors, warnings)`. Errors (duplicate or null IDs,
@@ -100,7 +136,6 @@ CI runs both on every pull request.
 
 ## Roadmap
 
-1. FastAPI service and Streamlit dashboard over the Gold tables.
-2. Football news ingestion.
-3. RAG over news plus SQL over DuckDB, then an agent layer.
-4. Further Silver detail tables (goalkeeper events and others).
+1. Football news ingestion.
+2. RAG over news plus SQL over DuckDB, then an agent layer.
+3. Further Silver detail tables (goalkeeper events and others).
