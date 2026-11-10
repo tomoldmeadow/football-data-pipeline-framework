@@ -1,11 +1,29 @@
 import pandas as pd
 
 
+def split_location(location):
+    """Return (x, y) from a StatsBomb location, or (None, None).
+
+    Handles missing, null or malformed values rather than assuming a
+    two-element list.
+    """
+
+    if (
+        isinstance(location, (list, tuple))
+        and len(location) >= 2
+    ):
+        return location[0], location[1]
+
+    return None, None
+
+
 def transform_events(events_data, match_id):
 
     rows = []
 
     for event in events_data:
+
+        location_x, location_y = split_location(event.get("location"))
 
         rows.append({
             "event_id": event.get("id"),
@@ -48,13 +66,8 @@ def transform_events(events_data, match_id):
                     .get("name")
             ),
 
-            "location_x": (
-                event.get("location", [None, None])[0]
-            ),
-
-            "location_y": (
-                event.get("location", [None, None])[1]
-            )
+            "location_x": location_x,
+            "location_y": location_y
         })
 
     return pd.DataFrame(rows)
