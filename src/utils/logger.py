@@ -1,20 +1,25 @@
 import logging
-from src.config.paths import LOG_DIR
 
-LOG_DIR.mkdir(exist_ok=True)
+from src.config.paths import LOG_DIR
+from src.config.settings import LOG_LEVEL
+
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
 
 def get_logger(name: str):
+    level = getattr(logging, LOG_LEVEL.upper(), logging.INFO)
+
     logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(level)
 
     if not logger.handlers:
         # Console handler
         console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
+        console_handler.setLevel(level)
 
         # File handler
         file_handler = logging.FileHandler(LOG_DIR / "pipeline.log")
-        file_handler.setLevel(logging.INFO)
+        file_handler.setLevel(level)
 
         formatter = logging.Formatter(
             "%(asctime)s | %(name)s | %(levelname)s | %(message)s"
