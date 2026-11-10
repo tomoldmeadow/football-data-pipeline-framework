@@ -29,7 +29,8 @@ def transform_lineups(lineups_data, match_id):
     Returns (lineups, positions):
     - lineups: one row per squad player (including unused substitutes).
     - positions: one row per spell a player spent in a position. These
-      are the reliable source for minutes played.
+      are the reliable source for minutes played. Spells that end before
+      they start are flagged with is_valid = False.
     """
 
     lineup_rows = []
@@ -57,14 +58,26 @@ def transform_lineups(lineups_data, match_id):
 
             for position in player.get("positions", []):
 
+                from_seconds = clock_to_seconds(position.get("from"))
+                to_seconds = clock_to_seconds(position.get("to"))
+
+                # Some source spells end before they start (a spurious
+                # "Tactical Shift" row on substitutes). Keep the row but
+                # flag it so Gold can exclude it from minutes played.
+                is_valid = (
+                    from_seconds is not None
+                    and (to_seconds is None or to_seconds >= from_seconds)
+                )
+
                 position_rows.append({
                     "match_id": match_id,
                     "team_id": team_id,
                     "player_id": player_id,
                     "position_id": position.get("position_id"),
                     "position": position.get("position"),
-                    "from_seconds": clock_to_seconds(position.get("from")),
-                    "to_seconds": clock_to_seconds(position.get("to")),
+                    "from_seconds": from_seconds,
+                    "to_seconds": to_seconds,
+                    "is_valid": is_valid,
                     "from_period": position.get("from_period"),
                     "to_period": position.get("to_period"),
                     "start_reason": position.get("start_reason"),

@@ -64,11 +64,14 @@ def conn():
         ],
         "lineup_positions": [
             {"match_id": 1, "player_id": 1, "team_id": 10,
-             "from_seconds": 0, "to_seconds": None},
+             "from_seconds": 0, "to_seconds": None, "is_valid": True},
             {"match_id": 1, "player_id": 2, "team_id": 10,
-             "from_seconds": 3600, "to_seconds": None},
+             "from_seconds": 3600, "to_seconds": None, "is_valid": True},
+            # Bad source spell: ends before it starts, must be ignored
+            {"match_id": 1, "player_id": 2, "team_id": 10,
+             "from_seconds": 6677, "to_seconds": 3600, "is_valid": False},
             {"match_id": 1, "player_id": 3, "team_id": 20,
-             "from_seconds": 0, "to_seconds": None},
+             "from_seconds": 0, "to_seconds": None, "is_valid": True},
         ],
         "matches": [
             {"match_id": 1, "match_date": "2018-06-19", "home_team": "A",
@@ -104,6 +107,20 @@ def test_minutes_played_from_lineup_positions(conn):
 
     assert p1["minutes_played"] - p2["minutes_played"] == 60.0
     assert p1["minutes_played"] > 0
+
+
+def test_overlapping_spells_are_not_double_counted(conn):
+    # Mirrors a source quirk: a starter with a second "Player On" spell
+    # that overlaps the first. P1 starts 0:00 and gets an extra overlap.
+    before = player(conn, 1)["minutes_played"]
+
+    conn.execute(
+        "INSERT INTO silver.lineup_positions VALUES "
+        "(1, 1, 10, 3000, NULL, TRUE)"
+    )
+    build_gold(conn)
+
+    assert player(conn, 1)["minutes_played"] == before
 
 
 def test_goals_and_xg_count_open_play_only(conn):

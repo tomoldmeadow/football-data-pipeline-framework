@@ -2,7 +2,9 @@
 --
 -- Definitions
 --   minutes_played        time on the pitch from lineup position spells
---                         (a null end time means "until the final whistle")
+--                         (a null end time means "until the final whistle";
+--                         spells flagged is_valid = false are ignored and
+--                         overlapping spells are merged)
 --   goals / shots / xg    open-play and extra-time shots only; period 5
 --                         (penalty shootout) is excluded
 --   assists               completed passes flagged goal_assist by StatsBomb
@@ -19,16 +21,65 @@ WITH match_end AS (
     GROUP BY match_id
 ),
 
-minutes AS (
+spells AS (
     SELECT
         p.match_id,
         p.player_id,
         p.team_id,
-        SUM(COALESCE(p.to_seconds, m.end_seconds) - p.from_seconds) / 60.0
-            AS minutes_played
+        p.from_seconds AS start_seconds,
+        COALESCE(p.to_seconds, m.end_seconds) AS end_seconds
     FROM silver.lineup_positions p
     JOIN match_end m USING (match_id)
-    GROUP BY p.match_id, p.player_id, p.team_id
+    WHERE p.is_valid
+),
+
+-- Some source rows overlap (e.g. a starter who also has a later "Player On"
+-- spell). Merge overlapping spells so time on the pitch is counted once;
+-- real gaps (a player briefly off the pitch) stay uncounted.
+spells_with_prior AS (
+    SELECT
+        *,
+        MAX(end_seconds) OVER (
+            PARTITION BY match_id, player_id
+            ORDER BY start_seconds, end_seconds
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+        ) AS prior_max_end
+    FROM spells
+),
+
+spell_groups AS (
+    SELECT
+        *,
+        SUM(
+            CASE
+                WHEN prior_max_end IS NULL OR start_seconds > prior_max_end
+                THEN 1 ELSE 0
+            END
+        ) OVER (
+            PARTITION BY match_id, player_id
+            ORDER BY start_seconds, end_seconds
+        ) AS spell_group
+    FROM spells_with_prior
+),
+
+merged_spells AS (
+    SELECT
+        match_id,
+        player_id,
+        MIN(team_id) AS team_id,
+        MAX(end_seconds) - MIN(start_seconds) AS seconds_on_pitch
+    FROM spell_groups
+    GROUP BY match_id, player_id, spell_group
+),
+
+minutes AS (
+    SELECT
+        match_id,
+        player_id,
+        MIN(team_id) AS team_id,
+        SUM(seconds_on_pitch) / 60.0 AS minutes_played
+    FROM merged_spells
+    GROUP BY match_id, player_id
 ),
 
 shots AS (

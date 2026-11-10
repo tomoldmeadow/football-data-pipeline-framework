@@ -12,29 +12,34 @@ def positions():
     return pd.DataFrame({
         "from_seconds": [0, 3600],
         "to_seconds": [5400, None],
+        "is_valid": [True, True],
     })
 
 
 def test_valid_lineups_pass():
-    assert validate_lineups(lineups(), positions()) == []
+    assert validate_lineups(lineups(), positions()) == ([], [])
 
 
 def test_duplicate_and_null_players_reported():
     df = pd.DataFrame({"match_id": [1, 1], "player_id": [1, 1]})
-    errors = validate_lineups(df, positions())
+    errors, _ = validate_lineups(df, positions())
 
     assert "Duplicate (match_id, player_id) in lineups" in errors
 
     df.loc[0, "player_id"] = None
-    assert "Null player IDs in lineups" in validate_lineups(df, positions())
+    errors, _ = validate_lineups(df, positions())
+    assert "Null player IDs in lineups" in errors
 
 
-def test_position_ending_before_start_reported():
-    bad = pd.DataFrame({"from_seconds": [100], "to_seconds": [50]})
+def test_invalid_spell_is_a_warning_not_an_error():
+    bad = pd.DataFrame({
+        "from_seconds": [100], "to_seconds": [50], "is_valid": [False],
+    })
 
-    errors = validate_lineups(lineups(), bad)
+    errors, warnings = validate_lineups(lineups(), bad)
 
-    assert "Lineup positions that end before they start" in errors
+    assert errors == []
+    assert any("end before they start" in w for w in warnings)
 
 
 def test_event_details_must_reference_known_events():

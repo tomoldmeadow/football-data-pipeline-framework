@@ -192,10 +192,17 @@ def run_pipeline():
     for warning in events_warnings:
         logger.warning(f"Events validation warning: {warning}")
 
+    lineups_errors, lineups_warnings = validate_lineups(
+        lineups_df, positions_df
+    )
+
+    for warning in lineups_warnings:
+        logger.warning(f"Lineups validation warning: {warning}")
+
     all_errors = (
         matches_errors
         + events_errors
-        + validate_lineups(lineups_df, positions_df)
+        + lineups_errors
         + validate_event_details(details, events_df)
     )
 

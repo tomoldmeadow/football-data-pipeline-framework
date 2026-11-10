@@ -66,3 +66,19 @@ def test_missing_country_does_not_crash():
     lineups, _ = transform_lineups(sample_lineups(), match_id=7)
 
     assert pd.isna(lineups.iloc[1]["country"])
+
+
+def test_spell_ending_before_it_starts_is_flagged_invalid():
+    data = sample_lineups()
+    data[0]["lineup"][0]["positions"].append({
+        "position_id": 1,
+        "position": "Secondary Striker",
+        "from": "111:17",
+        "to": "73:10",
+        "from_period": 4,
+        "to_period": 2,
+    })
+
+    _, positions = transform_lineups(data, match_id=7)
+
+    assert positions["is_valid"].tolist() == [True, False]
