@@ -4,7 +4,8 @@ import pandas as pd
 from src.config.settings import (
     DEFAULT_COMPETITION_ID,
     DEFAULT_SEASON_ID,
-    MAX_MATCHES
+    MAX_MATCHES,
+    FAIL_ON_VALIDATION_ERROR
 )
 
 from src.extraction.statsbomb_extractor import (
@@ -114,14 +115,31 @@ def run_pipeline():
             all_events.append(events_df)
 
 
-    events_df = pd.concat(all_events)
+    events_df = pd.concat(all_events, ignore_index=True)
 
 
     # -------------------
     # Validation
     # -------------------
 
-    ...
+    matches_errors = validate_matches(matches_df)
+
+    events_errors, events_warnings = validate_events(events_df)
+
+    for warning in events_warnings:
+        logger.warning(f"Events validation warning: {warning}")
+
+    all_errors = matches_errors + events_errors
+
+    for error in all_errors:
+        logger.error(f"Validation error: {error}")
+
+    if all_errors and FAIL_ON_VALIDATION_ERROR:
+        raise ValueError(
+            f"Validation failed with {len(all_errors)} error(s)"
+        )
+
+    logger.info("Validation passed")
 
 
     # -------------------

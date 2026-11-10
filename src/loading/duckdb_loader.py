@@ -9,7 +9,7 @@ def get_connection():
 def save_dataframe(df, table_name: str):
     """Write a DataFrame to the DuckDB database as a table.
 
-    Opens a connection to the database at DB_PATH and runs
+    Opens a connection to the database at DATABASE_PATH and runs
     CREATE OR REPLACE TABLE, so any existing table with the same name
     is overwritten rather than appended to.
 
