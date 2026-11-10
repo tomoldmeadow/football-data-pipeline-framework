@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+import requests
 
 from src.config.settings import (
     DEFAULT_COMPETITION_ID,
@@ -80,9 +81,32 @@ def run_pipeline():
         match_ids = match_ids[:MAX_MATCHES]
 
 
+    # One failed download should not abort the whole run
+    failed_matches = []
+
     for match_id in match_ids:
 
-        extract_events(match_id)
+        try:
+            extract_events(match_id)
+
+        except requests.RequestException as error:
+            logger.error(
+                f"Failed to download events for match {match_id}: {error}"
+            )
+            failed_matches.append(match_id)
+
+    if failed_matches:
+        logger.warning(
+            f"{len(failed_matches)} match download(s) failed: {failed_matches}"
+        )
+
+    match_ids = [m for m in match_ids if m not in failed_matches]
+
+    # Keep matches and events in scope together (MAX_MATCHES, failures)
+    matches_data = [
+        match for match in matches_data
+        if match["match_id"] in match_ids
+    ]
 
 
     # -------------------
