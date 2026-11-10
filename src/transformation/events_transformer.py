@@ -36,6 +36,11 @@ def transform_events(events_data, match_id):
             "duration": event.get("duration"),
             "possession": event.get("possession"),
 
+            "possession_team_id": (
+                event.get("possession_team", {})
+                    .get("id")
+            ),
+
             "possession_team": (
                 event.get("possession_team", {})
                     .get("name")
@@ -46,9 +51,19 @@ def transform_events(events_data, match_id):
                     .get("name")
             ),
 
+            "team_id": (
+                event.get("team", {})
+                    .get("id")
+            ),
+
             "team": (
                 event.get("team", {})
                     .get("name")
+            ),
+
+            "player_id": (
+                event.get("player", {})
+                    .get("id")
             ),
 
             "player": (
@@ -65,6 +80,8 @@ def transform_events(events_data, match_id):
                 event.get("type", {})
                     .get("name")
             ),
+
+            "under_pressure": bool(event.get("under_pressure", False)),
 
             "location_x": location_x,
             "location_y": location_y

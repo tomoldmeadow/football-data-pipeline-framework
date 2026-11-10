@@ -25,3 +25,13 @@ def test_save_dataframe_replaces_instead_of_appending(temp_db):
 def test_save_dataframe_rejects_bad_table_name(temp_db):
     with pytest.raises(ValueError):
         duckdb_loader.save_dataframe(pd.DataFrame({"a": [1]}), "t; DROP TABLE x")
+
+
+def test_save_dataframe_creates_schema(temp_db):
+    duckdb_loader.save_dataframe(pd.DataFrame({"a": [1]}), "silver.t")
+
+    conn = duckdb.connect(str(temp_db))
+    rows = conn.execute("SELECT a FROM silver.t").fetchall()
+    conn.close()
+
+    assert rows == [(1,)]
