@@ -1,6 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "football-data-pipeline-framework"
 version = "0.1.0"
+description = "A reusable data engineering framework for football data"
+requires-python = ">=3.11"
 
-[tool.setuptools]
-package-dir = {"" = "."}
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
